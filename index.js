@@ -1,7 +1,7 @@
 require('dotenv-safe').config()
 const Discord = require('discord.js')
 const client = new Discord.Client({
-  intents: Discord.Intents.FLAGS.GUILD_MESSAGES | Discord.Intents.FLAGS.GUILDS,
+  intents: Discord.Intents.FLAGS.GUILD_MESSAGES | Discord.Intents.FLAGS.GUILDS | Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
 })
 const fs = require('fs')
 
@@ -13,8 +13,8 @@ class StringReader {
     this.index = 0
   }
 
-  peek() {
-    return this.#text.charAt(this.index)
+  peek(amount = 0) {
+    return this.#text.charAt(this.index + amount)
   }
 
   skip(amount = 1) {
@@ -95,13 +95,14 @@ client.on('messageCreate', async msg => {
       }
       const time = processTime(match[1].trim())
       const theDate = new Date(Date.now() + time)
-      msg.channel.send(':timer: ' + theDate.toLocaleString('ja-jp'))
+      const sentMessage = await msg.channel.send(':timer: ' + theDate.toLocaleString('ja-jp'))
       arr.push({
         date: theDate.getTime(),
         msg: match[2],
         channel: msg.channelId,
         author: msg.author.id,
         messageId: msg.id,
+        sentMessageId: sentMessage.id,
       })
       save()
     } catch (ex) {
@@ -127,9 +128,9 @@ client.on('messageCreate', async msg => {
       const theDate = new Date(d)
       if (isNaN(theDate.getTime())) {
         msg.channel.send(`Invalid date: \`${d}\``)
-      } else {
-        msg.channel.send(':timer: ' + theDate.toLocaleString('ja-jp'))
+        return
       }
+      const sentMessage = await msg.channel.send(':timer: ' + theDate.toLocaleString('ja-jp'))
       const message = match[5] || match[4]
       arr.push({
         date: theDate.getTime(),
@@ -137,6 +138,7 @@ client.on('messageCreate', async msg => {
         channel: msg.channelId,
         author: msg.author.id,
         messageId: msg.id,
+        sentMessageId: sentMessage.id,
       })
       save()
     }
@@ -158,7 +160,7 @@ setInterval(async () => {
           },
         )
       } catch (e) {
-        // ignore
+        console.warn(e.stack || e)
       }
     }
   }
@@ -166,6 +168,16 @@ setInterval(async () => {
   arr = arr.filter(obj => obj.date > now)
   if (l1 !== arr.length) save()
 }, 1000)
+
+client.on('messageReactionAdd', (reaction, user) => {
+  const oldLength = arr.length
+  // removeIf
+  arr = arr.filter(obj => !((obj.messageId === reaction.message.id || obj.sentMessageId === reaction.message.id) && obj.author == user.id))
+  if (arr.length < oldLength) {
+    reaction.message.reply('このリマインドをキャンセルしました。')
+    save()
+  }
+})
 
 console.log('trying to say hello to discord')
 client.login(process.env.TOKEN)
