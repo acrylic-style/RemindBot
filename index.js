@@ -160,7 +160,7 @@ setInterval(async () => {
           },
         )
       } catch (e) {
-        console.warn(e.stack || e)
+        // ignore
       }
     }
   }
@@ -169,12 +169,24 @@ setInterval(async () => {
   if (l1 !== arr.length) save()
 }, 1000)
 
-client.on('messageReactionAdd', (reaction, user) => {
+client.on('raw', async packet => {
+  if (packet.t !== 'MESSAGE_REACTION_ADD') return
   const oldLength = arr.length
   // removeIf
-  arr = arr.filter(obj => !((obj.messageId === reaction.message.id || obj.sentMessageId === reaction.message.id) && obj.author == user.id))
+  arr = arr.filter(obj => !((obj.messageId === packet.d.message_id || obj.sentMessageId === packet.d.message_id) && obj.author == packet.d.user_id))
   if (arr.length < oldLength) {
-    reaction.message.reply('このリマインドをキャンセルしました。')
+    try {
+      (await client.channels.fetch(packet.d.channel_id)).send(
+        {
+          content: `リマインドをキャンセルしました。`,
+          reply: {
+            messageReference: packet.d.message_id,
+          },
+        },
+      )
+    } catch (e) {
+      // ignore
+    }
     save()
   }
 })
