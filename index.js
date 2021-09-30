@@ -86,7 +86,7 @@ const save = () => {
 client.on('messageCreate', async msg => {
   if (msg.system || msg.author.bot || msg.author.system) return
   if (msg.content.startsWith(`<@${client.user.id}> `) || msg.content.startsWith(`<@!${client.user.id}> `)) {
-    const e = msg.content.replace(`<@${client.user.id}> `, '').replace(`<@!${client.user.id}> `, '')
+    const e = msg.content.replace(`<@${client.user.id}> `, '').replace(`<@!${client.user.id}> `, '').trimStart()
     try {
       const match = e.match(/(.*?) (.*)/)
       if (!match) {
