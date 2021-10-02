@@ -88,7 +88,7 @@ client.on('messageCreate', async msg => {
   if (msg.content.startsWith(`<@${client.user.id}> `) || msg.content.startsWith(`<@!${client.user.id}> `)) {
     const e = msg.content.replace(`<@${client.user.id}> `, '').replace(`<@!${client.user.id}> `, '').trimStart()
     try {
-      const match = e.match(/(.*?) (.*)/)
+      const match = e.match(/(.*?)[ \n](.*)/)
       if (!match) {
         msg.channel.send(`Invalid date: \`${e}\``)
         return
@@ -109,7 +109,7 @@ client.on('messageCreate', async msg => {
       const date = new Date().toDateString()
       const time = new Date().toTimeString()
       let d = ''
-      const match = e.match(/(\d{2,4}\/\d{1,2}\/\d{1,2})?( ?(\d{1,2}:\d{1,2}:\d{1,2})? (.+))/)
+      const match = e.match(/(\d{2,4}\/\d{1,2}\/\d{1,2})?( ?(\d{1,2}:\d{1,2}:\d{1,2})?[ \n](.+))/)
       if (!match) {
         msg.channel.send(`Invalid date: \`${e}\``)
         return
