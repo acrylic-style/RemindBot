@@ -86,7 +86,19 @@ const save = () => {
 client.on('messageCreate', async msg => {
   if (msg.system || msg.author.bot || msg.author.system) return
   if (msg.content.startsWith(`<@${client.user.id}> `) || msg.content.startsWith(`<@!${client.user.id}> `)) {
-    const e = msg.content.replace(`<@${client.user.id}> `, '').replace(`<@!${client.user.id}> `, '').trimStart()
+    const e = msg.content.replace(RegExp(`<@!?${client.user.id}>[\\s\n]+`), '').trimStart()
+    if (e === 'list') {
+      const reminds = (await Promise.all(arr.filter(e => e.author === msg.author.id).map(async e => {
+        const guildId = (await client.channels.fetch(e.channel))?.guild?.id || 'me'
+        return {
+          date: e.date,
+          url: `https://discordapp.com/channels/${guildId}/${e.channel}/${e.messageId}`,
+          message: e.msg,
+        }
+      }))).map(e => `${(new Date(e.date)).toLocaleString('ja-jp')}: ${e.url}\n\`\`\`\n${e.message}\n\`\`\`\n`).join('')
+      msg.reply(`Reminds:\n${reminds}`)
+      return
+    }
     try {
       const match = e.match(/(.*?)[ \n](.*)/)
       if (!match) {
