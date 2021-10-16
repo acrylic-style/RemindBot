@@ -109,7 +109,7 @@ client.on('messageCreate', async msg => {
       const date = new Date().toDateString()
       const time = new Date().toTimeString()
       let d = ''
-      const match = e.match(/(\d{2,4}\/\d{1,2}\/\d{1,2})?( ?(\d{1,2}:\d{1,2}:\d{1,2})?[ \n](.+))/)
+      const match = e.match(/(\d{2,4}\/\d{1,2}\/\d{1,2})?( ?(\d{1,2}:\d{1,2}(:\d{1,2})?)?[ \n](.+))/)
       if (!match) {
         msg.channel.send(`Invalid date: \`${e}\``)
         return
@@ -121,11 +121,12 @@ client.on('messageCreate', async msg => {
       }
       d += ' '
       if (e.includes(':')) {
-        d += match[3]
+        d += match[3] || time
       } else {
         d += time
       }
-      const theDate = new Date(d)
+      let theDate = new Date(d)
+      if (theDate.getTime() < Date.now()) theDate = new Date(theDate.getTime() + 86400000)
       if (isNaN(theDate.getTime())) {
         msg.channel.send(`Invalid date: \`${d}\``)
         return
