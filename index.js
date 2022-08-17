@@ -1,7 +1,8 @@
 require('dotenv-safe').config()
 const Discord = require('discord.js')
+const { GatewayIntentBits } = Discord
 const client = new Discord.Client({
-  intents: Discord.Intents.FLAGS.GUILD_MESSAGES | Discord.Intents.FLAGS.GUILDS | Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS | Discord.Intents.FLAGS.DIRECT_MESSAGES | Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
+  intents: GatewayIntentBits.GuildMessages | GatewayIntentBits.Guilds | GatewayIntentBits.GuildMessageReactions | GatewayIntentBits.DirectMessages | GatewayIntentBits.DirectMessageReactions,
 })
 const fs = require('fs')
 
@@ -92,7 +93,7 @@ client.on('messageCreate', async msg => {
         const guildId = (await client.channels.fetch(e.channel))?.guild?.id || 'me'
         return {
           date: e.date,
-          url: `https://discordapp.com/channels/${guildId}/${e.channel}/${e.messageId}`,
+          url: `https://discord.com/channels/${guildId}/${e.channel}/${e.messageId}`,
           message: e.msg,
         }
       }))).map(e => `${(new Date(e.date)).toLocaleString('ja-jp')}: ${e.url}\n\`\`\`\n${e.message}\n\`\`\`\n`).join('')
