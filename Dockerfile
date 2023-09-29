@@ -14,5 +14,6 @@ WORKDIR /app
 COPY --from=Builder /app/package.json ./
 COPY --from=Builder /app/node_modules/ ./node_modules/
 COPY index.js ./
+COPY .env.example ./
 
 CMD ["yarn", "start"]
